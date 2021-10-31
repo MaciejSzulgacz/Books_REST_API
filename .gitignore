@@ -2,4 +2,3 @@ venv/
 .idea/
 __pycache__/
 books_db.db
-books_db3.db

@@ -3,7 +3,7 @@ import sqlite3
 
 from flask import Flask, request, abort, jsonify, Response
 from logging import getLogger
-from .data_functions import list_of_books, search_book_by_author, search_book_by_published_date,\
+from .data_functions import get_list_of_books, get_book_by_author, get_book_by_published_date,\
     sort_books_by_published_date
 from .db_functions import parse_db_body, sync_db_with_google
 
@@ -14,11 +14,11 @@ BASE_URL = "https://www.googleapis.com/books/v1/volumes?{0}={1}"
 
 
 @app.route("/", methods=['GET'])
-def create_db_and_table():
+def create_db_and_table() -> None:
     if request.method == 'GET':
         con = sqlite3.connect('books_db3.db')
         cur = con.cursor()
-        create_books_table = """CREATE TABLE my_books(
+        create_books_table = """CREATE TABLE IF NOT EXISTS my_books(
             id text primary key,
             title text,
             authors text,
@@ -30,11 +30,10 @@ def create_db_and_table():
         """
         cur.execute(create_books_table)
         con.commit()
-        return None
 
 
 @app.route("/db", methods=["POST"])
-def init_db_sync():
+def post_db_sync():
     response = None
     if request.method == "POST":
         key, value = parse_db_body(request.data)
@@ -50,7 +49,7 @@ def init_db_sync():
 
 
 @app.route("/books", methods=['GET'])
-def get_books():
+def get_books() -> Response:
     if request.method == 'GET':
         con = sqlite3.connect('books_db3.db')
         cur = con.cursor()
@@ -58,20 +57,20 @@ def get_books():
         date_to_sort = request.args.get('sort')
         authors_dict = request.args.to_dict(flat=False)
         if published_date:
-            return search_book_by_published_date(cur, published_date)
+            return get_book_by_published_date(cur, published_date)
         elif date_to_sort:
             return sort_books_by_published_date(cur, date_to_sort)
         elif authors_dict:
             try:
-                return search_book_by_author(cur, authors_dict)
+                return get_book_by_author(cur, authors_dict)
             except KeyError:
                 pass
         else:
-            return list_of_books(cur)
+            return get_list_of_books(cur)
 
 
 @app.route("/books/<string:book_id>", methods=['GET'])
-def search_book_by_id(book_id: str) -> Response:
+def get_book_by_id(book_id: str) -> Response:
     if request.method == 'GET':
         con = sqlite3.connect('books_db3.db')
         cur = con.cursor()

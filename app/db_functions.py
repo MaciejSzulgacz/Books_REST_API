@@ -29,22 +29,19 @@ def update_db(google_data: dict) -> None:
         volume_info = book.get('volumeInfo')
         id_number = book.get('id')
         title = volume_info.get("title")
-        authors_dict = volume_info.get('authors', "")
-        if authors_dict:
-            authors = ' '.join(map(str, authors_dict))
+        if 'authors' in volume_info:
+            authors = ' '.join(map(str, volume_info.get("authors", "")))
         else:
             authors = ""
         published_date = volume_info.get('publishedDate')
-        categories_list = volume_info.get('categories', "")
-        if categories_list:
-            categories = ' '.join(map(str, categories_list))
+        if 'categories' in volume_info:
+            categories = ' '.join(map(str, volume_info.get("categories", "")))
         else:
             categories = ""
         average_rating = volume_info.get("averageRating", "")
         ratings_count = volume_info.get("ratingsCount", "")
-        thumbnail_dict = volume_info.get('imageLinks', "")
-        if thumbnail_dict:
-            thumbnail = thumbnail_dict.get('thumbnail', "")
+        if 'imageLinks' in volume_info:
+            thumbnail = volume_info['imageLinks'].get('thumbnail', "")
         else:
             thumbnail = ""
         new_insert = (f'{id_number}', f'{title}', f'{authors}', f'{published_date}', f'{categories}',
