@@ -22,7 +22,7 @@ def sync_db_with_google(key: str, value: str) -> Dict[str, Any]:
 
 
 def update_db(google_data: dict) -> None:
-    con = sqlite3.connect('books_db3.db')
+    con = sqlite3.connect('books_db.db')
     cur = con.cursor()
     list_of_inserts = []
     for book in google_data['items']:
