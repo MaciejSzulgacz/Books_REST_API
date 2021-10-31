@@ -50,6 +50,7 @@ def update_db(google_data: dict):
                       f'{average_rating}', f'{ratings_count}', f'{thumbnail}')
         list_of_inserts.append(new_insert)
     for insert in list_of_inserts:
-        cur.execute(f"INSERT INTO my_books (id, title, authors, published_date, categories, average_rating, "
+        cur.execute(f"INSERT OR REPLACE INTO my_books (id, title, authors, published_date, categories, average_rating, "
                     f"ratings_count, thumbnail) VALUES {insert}")
-        con.commit()
+    con.commit()
+    return None

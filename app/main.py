@@ -30,7 +30,7 @@ def create_db_and_table():
         """
         cur.execute(create_books_table)
         con.commit()
-        pass
+        return None
 
 
 @app.route("/db", methods=["POST"])
@@ -75,7 +75,8 @@ def search_book_by_id(book_id: str) -> Response:
     if request.method == 'GET':
         con = sqlite3.connect('books_db.db')
         cur = con.cursor()
-        cur.execute(f"SELECT * FROM my_books WHERE id = '{book_id}'")
+        cur.execute(f"SELECT title, authors, published_date, categories, average_rating, ratings_count, thumbnail "
+                    f"FROM my_books WHERE id = '{book_id}'")
         row_headers = [x[0] for x in cur.description]
         rv = cur.fetchall()
         json_data = []
