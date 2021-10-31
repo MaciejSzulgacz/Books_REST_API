@@ -21,31 +21,32 @@ def sync_db_with_google(key: str, value: str) -> Dict[str, Any]:
     return google_data
 
 
-def update_db(google_data: dict):
-    con = sqlite3.connect('books_db.db')
+def update_db(google_data: dict) -> None:
+    con = sqlite3.connect('books_db3.db')
     cur = con.cursor()
     list_of_inserts = []
     for book in google_data['items']:
-        id_number = book['id']
-        title = book['volumeInfo']['title']
-        authors_dict = book['volumeInfo'].get('authors', None)
+        volume_info = book.get('volumeInfo')
+        id_number = book.get('id')
+        title = volume_info.get("title")
+        authors_dict = volume_info.get('authors', "")
         if authors_dict:
             authors = ' '.join(map(str, authors_dict))
         else:
-            authors = None
-        published_date = book['volumeInfo']['publishedDate']
-        categories_list = book['volumeInfo'].get('categories', None)
+            authors = ""
+        published_date = volume_info.get('publishedDate')
+        categories_list = volume_info.get('categories', "")
         if categories_list:
             categories = ' '.join(map(str, categories_list))
         else:
-            categories = None
-        average_rating = book['volumeInfo'].get("averageRating", None)
-        ratings_count = book['volumeInfo'].get("ratingsCount", None)
-        thumbnail_dict = book['volumeInfo'].get('imageLinks', None)
+            categories = ""
+        average_rating = volume_info.get("averageRating", "")
+        ratings_count = volume_info.get("ratingsCount", "")
+        thumbnail_dict = volume_info.get('imageLinks', "")
         if thumbnail_dict:
-            thumbnail = thumbnail_dict.get('thumbnail', None)
+            thumbnail = thumbnail_dict.get('thumbnail', "")
         else:
-            thumbnail = None
+            thumbnail = ""
         new_insert = (f'{id_number}', f'{title}', f'{authors}', f'{published_date}', f'{categories}',
                       f'{average_rating}', f'{ratings_count}', f'{thumbnail}')
         list_of_inserts.append(new_insert)
@@ -53,4 +54,3 @@ def update_db(google_data: dict):
         cur.execute(f"INSERT OR REPLACE INTO my_books (id, title, authors, published_date, categories, average_rating, "
                     f"ratings_count, thumbnail) VALUES {insert}")
     con.commit()
-    return None

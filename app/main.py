@@ -16,7 +16,7 @@ BASE_URL = "https://www.googleapis.com/books/v1/volumes?{0}={1}"
 @app.route("/", methods=['GET'])
 def create_db_and_table():
     if request.method == 'GET':
-        con = sqlite3.connect('books_db.db')
+        con = sqlite3.connect('books_db3.db')
         cur = con.cursor()
         create_books_table = """CREATE TABLE my_books(
             id text primary key,
@@ -52,7 +52,7 @@ def init_db_sync():
 @app.route("/books", methods=['GET'])
 def get_books():
     if request.method == 'GET':
-        con = sqlite3.connect('books_db.db')
+        con = sqlite3.connect('books_db3.db')
         cur = con.cursor()
         published_date = request.args.get('published_date')
         date_to_sort = request.args.get('sort')
@@ -73,7 +73,7 @@ def get_books():
 @app.route("/books/<string:book_id>", methods=['GET'])
 def search_book_by_id(book_id: str) -> Response:
     if request.method == 'GET':
-        con = sqlite3.connect('books_db.db')
+        con = sqlite3.connect('books_db3.db')
         cur = con.cursor()
         cur.execute(f"SELECT title, authors, published_date, categories, average_rating, ratings_count, thumbnail "
                     f"FROM my_books WHERE id = '{book_id}'")
