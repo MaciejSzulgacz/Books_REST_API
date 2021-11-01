@@ -1,4 +1,4 @@
-from flask import request, jsonify, Response
+from flask import abort, jsonify, request, Response
 from sqlite3 import Cursor
 
 
@@ -44,7 +44,7 @@ def sort_books_by_published_date(cur: Cursor, date_to_sort: str) -> Response:
         else:
             desc_or_asc = "ASC"
     else:
-        pass
+        abort(404)
     cur.execute(f"SELECT title, authors, published_date, categories, average_rating, ratings_count, thumbnail "
                 f"FROM my_books ORDER BY published_date {desc_or_asc}")
     row_headers = [x[0] for x in cur.description]

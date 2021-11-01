@@ -6,6 +6,23 @@ from typing import Tuple, Dict, Any
 BASE_URL = "https://www.googleapis.com/books/v1/volumes?{0}={1}"
 
 
+def create_db_and_table() -> None:
+    con = sqlite3.connect('books_db.db')
+    cur = con.cursor()
+    create_books_table = """CREATE TABLE IF NOT EXISTS my_books(
+        id text primary key,
+        title text,
+        authors text,
+        published_date varchar(10),
+        categories text,
+        average_rating int,
+        ratings_count int,
+        thumbnail text);
+    """
+    cur.execute(create_books_table)
+    con.commit()
+
+
 def parse_db_body(input_data: bytes) -> Tuple[str, str]:
     data = json.loads(input_data.decode().strip())
     key = "q"
@@ -27,17 +44,11 @@ def update_db(google_data: dict) -> None:
     list_of_inserts = []
     for book in google_data['items']:
         volume_info = book.get('volumeInfo')
-        id_number = book.get('id')
-        title = volume_info.get("title")
-        if 'authors' in volume_info:
-            authors = ' '.join(map(str, volume_info.get("authors", "")))
-        else:
-            authors = ""
-        published_date = volume_info.get('publishedDate')
-        if 'categories' in volume_info:
-            categories = ' '.join(map(str, volume_info.get("categories", "")))
-        else:
-            categories = ""
+        id_number = book.get('id', "")
+        title = volume_info.get("title", "")
+        authors = ' '.join(map(str, volume_info.get("authors", "")))
+        published_date = volume_info.get('publishedDate', "")
+        categories = ' '.join(map(str, volume_info.get("categories", "")))
         average_rating = volume_info.get("averageRating", "")
         ratings_count = volume_info.get("ratingsCount", "")
         if 'imageLinks' in volume_info:

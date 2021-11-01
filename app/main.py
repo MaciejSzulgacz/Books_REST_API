@@ -5,7 +5,7 @@ from flask import Flask, request, abort, jsonify, Response
 from logging import getLogger
 from .data_functions import get_list_of_books, get_book_by_author, get_book_by_published_date,\
     sort_books_by_published_date
-from .db_functions import parse_db_body, sync_db_with_google
+from .db_functions import create_db_and_table, parse_db_body, sync_db_with_google
 
 app = Flask(__name__)
 logger = getLogger("FirstFlask")
@@ -14,28 +14,16 @@ BASE_URL = "https://www.googleapis.com/books/v1/volumes?{0}={1}"
 
 
 @app.route("/", methods=['GET'])
-def create_db_and_table() -> None:
+def get_welcome_view() -> str:
     if request.method == 'GET':
-        con = sqlite3.connect('books_db.db')
-        cur = con.cursor()
-        create_books_table = """CREATE TABLE IF NOT EXISTS my_books(
-            id text primary key,
-            title text,
-            authors text,
-            published_date varchar(10),
-            categories text,
-            average_rating int,
-            ratings_count int,
-            thumbnail text);
-        """
-        cur.execute(create_books_table)
-        con.commit()
+        return "<h1>Welcome on my interview application.<h1> <h2>Maciej Szulgacz<h2>"
 
 
 @app.route("/db", methods=["POST"])
 def post_db_sync():
     response = None
     if request.method == "POST":
+        create_db_and_table()
         key, value = parse_db_body(request.data)
         google_resp = sync_db_with_google(key, value)
         response = app.response_class(
