@@ -4,13 +4,10 @@ from logging import getLogger
 
 from flask import Flask, Response, abort, jsonify, request
 
-from .data_functions import (
-    get_book_by_author,
-    get_book_by_published_date,
-    get_list_of_books,
-    sort_books_by_published_date,
-)
-from .db_functions import create_db_and_table, parse_db_body, sync_db_with_google
+from .data_functions import (get_book_by_author, get_book_by_published_date,
+                             get_list_of_books, sort_books_by_published_date)
+from .db_functions import (create_db_and_table, parse_db_body,
+                           sync_db_with_google)
 
 app = Flask(__name__)
 logger = getLogger("FirstFlask")
