@@ -4,10 +4,13 @@ from logging import getLogger
 
 from flask import Flask, Response, abort, jsonify, request
 
-from .data_functions import (get_book_by_author, get_book_by_published_date,
-                             get_list_of_books, sort_books_by_published_date)
-from .db_functions import (create_db_and_table, parse_db_body,
-                           sync_db_with_google)
+from .data_functions import (
+    get_book_by_author,
+    get_book_by_published_date,
+    get_list_of_books,
+    sort_books_by_published_date,
+)
+from .db_functions import create_db_and_table, parse_db_body, sync_db_with_google
 
 app = Flask(__name__)
 logger = getLogger("FirstFlask")
@@ -65,8 +68,11 @@ def get_book_by_id(book_id: str) -> Response:
         con = sqlite3.connect("books_db.db")
         cur = con.cursor()
         cur.execute(
-            f"SELECT title, authors, published_date, categories, average_rating, ratings_count, thumbnail "
-            f"FROM my_books WHERE id = '{book_id}'"
+            """
+            SELECT title, authors, published_date, categories, average_rating, ratings_count, thumbnail
+            FROM my_books WHERE id = %(book_id)s'
+        """,
+            {"book_id": book_id},
         )
         row_headers = [x[0] for x in cur.description]
         rv = cur.fetchall()
