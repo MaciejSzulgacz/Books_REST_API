@@ -1,10 +1,15 @@
 import json
 import sqlite3
-
-from flask import Flask, request, abort, jsonify, Response
 from logging import getLogger
-from .data_functions import get_list_of_books, get_book_by_author, get_book_by_published_date,\
-    sort_books_by_published_date
+
+from flask import Flask, Response, abort, jsonify, request
+
+from .data_functions import (
+    get_book_by_author,
+    get_book_by_published_date,
+    get_list_of_books,
+    sort_books_by_published_date,
+)
 from .db_functions import create_db_and_table, parse_db_body, sync_db_with_google
 
 app = Flask(__name__)
@@ -13,9 +18,9 @@ logger = getLogger("FirstFlask")
 BASE_URL = "https://www.googleapis.com/books/v1/volumes?{0}={1}"
 
 
-@app.route("/", methods=['GET'])
+@app.route("/", methods=["GET"])
 def get_welcome_view() -> str:
-    if request.method == 'GET':
+    if request.method == "GET":
         return "<h1>Welcome on my interview application.<h1> <h2>Maciej Szulgacz<h2>"
 
 
@@ -36,13 +41,13 @@ def post_db_sync():
     return response or abort(500)
 
 
-@app.route("/books", methods=['GET'])
+@app.route("/books", methods=["GET"])
 def get_books() -> Response:
-    if request.method == 'GET':
-        con = sqlite3.connect('books_db.db')
+    if request.method == "GET":
+        con = sqlite3.connect("books_db.db")
         cur = con.cursor()
-        published_date = request.args.get('published_date')
-        date_to_sort = request.args.get('sort')
+        published_date = request.args.get("published_date")
+        date_to_sort = request.args.get("sort")
         authors_dict = request.args.to_dict(flat=False)
         if published_date:
             return get_book_by_published_date(cur, published_date)
@@ -57,13 +62,15 @@ def get_books() -> Response:
             return get_list_of_books(cur)
 
 
-@app.route("/books/<string:book_id>", methods=['GET'])
+@app.route("/books/<string:book_id>", methods=["GET"])
 def get_book_by_id(book_id: str) -> Response:
-    if request.method == 'GET':
-        con = sqlite3.connect('books_db.db')
+    if request.method == "GET":
+        con = sqlite3.connect("books_db.db")
         cur = con.cursor()
-        cur.execute(f"SELECT title, authors, published_date, categories, average_rating, ratings_count, thumbnail "
-                    f"FROM my_books WHERE id = '{book_id}'")
+        cur.execute(
+            f"SELECT title, authors, published_date, categories, average_rating, ratings_count, thumbnail "
+            f"FROM my_books WHERE id = '{book_id}'"
+        )
         row_headers = [x[0] for x in cur.description]
         rv = cur.fetchall()
         json_data = []

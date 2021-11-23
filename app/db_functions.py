@@ -1,13 +1,14 @@
 import json
-import requests
 import sqlite3
-from typing import Tuple, Dict, Any
+from typing import Any, Dict, Tuple
+
+import requests
 
 BASE_URL = "https://www.googleapis.com/books/v1/volumes?{0}={1}"
 
 
 def create_db_and_table() -> None:
-    con = sqlite3.connect('books_db.db')
+    con = sqlite3.connect("books_db.db")
     cur = con.cursor()
     create_books_table = """CREATE TABLE IF NOT EXISTS my_books(
         id text primary key,
@@ -39,26 +40,36 @@ def sync_db_with_google(key: str, value: str) -> Dict[str, Any]:
 
 
 def update_db(google_data: dict) -> None:
-    con = sqlite3.connect('books_db.db')
+    con = sqlite3.connect("books_db.db")
     cur = con.cursor()
     list_of_inserts = []
-    for book in google_data['items']:
-        volume_info = book.get('volumeInfo')
-        id_number = book.get('id', "")
+    for book in google_data["items"]:
+        volume_info = book.get("volumeInfo")
+        id_number = book.get("id", "")
         title = volume_info.get("title", "")
-        authors = ' '.join(map(str, volume_info.get("authors", "")))
-        published_date = volume_info.get('publishedDate', "")
-        categories = ' '.join(map(str, volume_info.get("categories", "")))
+        authors = " ".join(map(str, volume_info.get("authors", "")))
+        published_date = volume_info.get("publishedDate", "")
+        categories = " ".join(map(str, volume_info.get("categories", "")))
         average_rating = volume_info.get("averageRating", "")
         ratings_count = volume_info.get("ratingsCount", "")
-        if 'imageLinks' in volume_info:
-            thumbnail = volume_info['imageLinks'].get('thumbnail', "")
+        if "imageLinks" in volume_info:
+            thumbnail = volume_info["imageLinks"].get("thumbnail", "")
         else:
             thumbnail = ""
-        new_insert = (f'{id_number}', f'{title}', f'{authors}', f'{published_date}', f'{categories}',
-                      f'{average_rating}', f'{ratings_count}', f'{thumbnail}')
+        new_insert = (
+            f"{id_number}",
+            f"{title}",
+            f"{authors}",
+            f"{published_date}",
+            f"{categories}",
+            f"{average_rating}",
+            f"{ratings_count}",
+            f"{thumbnail}",
+        )
         list_of_inserts.append(new_insert)
     for insert in list_of_inserts:
-        cur.execute(f"INSERT OR REPLACE INTO my_books (id, title, authors, published_date, categories, average_rating, "
-                    f"ratings_count, thumbnail) VALUES {insert}")
+        cur.execute(
+            f"INSERT OR REPLACE INTO my_books (id, title, authors, published_date, categories, average_rating, "
+            f"ratings_count, thumbnail) VALUES {insert}"
+        )
     con.commit()
