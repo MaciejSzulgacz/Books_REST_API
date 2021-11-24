@@ -21,7 +21,7 @@ BASE_URL = "https://www.googleapis.com/books/v1/volumes?{0}={1}"
 @app.route("/", methods=["GET"])
 def get_welcome_view() -> str:
     if request.method == "GET":
-        return "<h1>Welcome on my interview application.<h1> <h2>Maciej Szulgacz<h2>"
+        return "<h1>Welcome on my BOOKS_REST_API application.<h1> <h2>Maciej Szulgacz<h2>"
 
 
 @app.route("/db", methods=["POST"])
@@ -42,41 +42,45 @@ def post_db_sync():
 
 
 @app.route("/books", methods=["GET"])
-def get_books() -> Response:
+def get_books() -> Response or str:
     if request.method == "GET":
-        con = sqlite3.connect("books_db.db")
-        cur = con.cursor()
-        published_date = request.args.get("published_date")
-        date_to_sort = request.args.get("sort")
-        authors_dict = request.args.to_dict(flat=False)
-        if published_date:
-            return get_book_by_published_date(cur, published_date)
-        elif date_to_sort:
-            return sort_books_by_published_date(cur, date_to_sort)
-        elif authors_dict:
-            try:
-                return get_book_by_author(cur, authors_dict)
-            except KeyError:
-                abort(404)
-        else:
-            return get_list_of_books(cur)
+        try:
+            con = sqlite3.connect("books_db.db")
+            cur = con.cursor()
+            published_date = request.args.get("published_date")
+            date_to_sort = request.args.get("sort")
+            authors_dict = request.args.to_dict(flat=False)
+            if published_date:
+                return get_book_by_published_date(cur, published_date)
+            elif date_to_sort:
+                return sort_books_by_published_date(cur, date_to_sort)
+            elif authors_dict:
+                try:
+                    return get_book_by_author(cur, authors_dict)
+                except KeyError:
+                    abort(404)
+            else:
+                return get_list_of_books(cur)
+        except sqlite3.OperationalError:
+            return "<h1>Database is empty, send data to the database.<h1>"
 
 
 @app.route("/books/<string:book_id>", methods=["GET"])
-def get_book_by_id(book_id: str) -> Response:
+def get_book_by_id(book_id: str) -> Response or str:
     if request.method == "GET":
-        con = sqlite3.connect("books_db.db")
-        cur = con.cursor()
-        cur.execute(
-            """
-            SELECT title, authors, published_date, categories, average_rating, ratings_count, thumbnail
-            FROM my_books WHERE id = %(book_id)s'
-        """,
-            {"book_id": book_id},
-        )
-        row_headers = [x[0] for x in cur.description]
-        rv = cur.fetchall()
-        json_data = []
-        for result in rv:
-            json_data.append(dict(zip(row_headers, result)))
-        return jsonify(json_data)
+        try:
+            con = sqlite3.connect("books_db.db")
+            cur = con.cursor()
+            cur.execute(
+                """
+                SELECT title, authors, published_date, categories, average_rating, ratings_count, thumbnail
+                FROM my_books WHERE id = "{}";
+            """.format(book_id))
+            row_headers = [x[0] for x in cur.description]
+            rv = cur.fetchall()
+            json_data = []
+            for result in rv:
+                json_data.append(dict(zip(row_headers, result)))
+            return jsonify(json_data)
+        except sqlite3.OperationalError:
+            return "<h1>Database is empty, send data to the database.<h1>"

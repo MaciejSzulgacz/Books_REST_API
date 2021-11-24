@@ -8,7 +8,7 @@ def get_list_of_books(cur: Cursor) -> Response:
         cur.execute(
             """
             SELECT title, authors, published_date, categories, average_rating, ratings_count, thumbnail
-            FROM my_books
+            FROM my_books;
         """
         )
         row_headers = [x[0] for x in cur.description]
@@ -24,10 +24,8 @@ def get_book_by_author(cur: Cursor, authors_dict: dict) -> Response:
     cur.execute(
         """
         SELECT title, authors, published_date, categories, average_rating, ratings_count, thumbnail
-        FROM my_books WHERE authors LIKE %(authors_string)s
-    """,
-        {"authors_string": authors_string},
-    )
+        FROM my_books WHERE authors LIKE '%{}%';
+    """.format(authors_string))
     row_headers = [x[0] for x in cur.description]
     rv = cur.fetchall()
     json_data = []
@@ -40,10 +38,8 @@ def get_book_by_published_date(cur: Cursor, published_date: str) -> Response:
     cur.execute(
         """
         SELECT title, authors, published_date, categories, average_rating, ratings_count, thumbnail
-        FROM my_books WHERE published_date LIKE %(published_date)s
-    """,
-        {"published_date": published_date},
-    )
+        FROM my_books WHERE published_date LIKE '%{}%';
+    """.format(published_date))
     row_headers = [x[0] for x in cur.description]
     rv = cur.fetchall()
     json_data = []
@@ -54,18 +50,15 @@ def get_book_by_published_date(cur: Cursor, published_date: str) -> Response:
 
 def sort_books_by_published_date(cur: Cursor, date_to_sort: str) -> Response:
     if date_to_sort:
-        desc_or_asc = "ASC"
+        desc_or_asc = "published_date ASC"
         if date_to_sort[0] == "-":
-            desc_or_asc = "DESC"
+            desc_or_asc = "published_date DESC"
     else:
         abort(404)
-    cur.execute(
-        """
+    cur.execute("""
         SELECT title, authors, published_date, categories, average_rating, ratings_count, thumbnail
-        FROM my_books ORDER BY published_date %(desc_or_asc)s
-    """,
-        {"desc_or_asc": desc_or_asc},
-    )
+        FROM my_books ORDER BY {};
+    """.format(desc_or_asc))
     row_headers = [x[0] for x in cur.description]
     rv = cur.fetchall()
     json_data = []
